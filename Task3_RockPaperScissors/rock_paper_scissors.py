@@ -1,7 +1,7 @@
 # ============================================
 # Rock Paper Scissors Game
-# Author: [Your Name]
-# Date: May 2026
+# Author: N.durga prasad 
+# Date: 26/05/2026
 # Description: A GUI Rock Paper Scissors game
 #              with score tracking and auto-
 #              reset after each round result
