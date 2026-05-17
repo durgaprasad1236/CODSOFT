@@ -2,238 +2,276 @@
 # Rock Paper Scissors Game
 # Author: [Your Name]
 # Date: May 2026
-# Description: A fun GUI-based Rock Paper
-#              Scissors game using Tkinter
+# Description: A GUI Rock Paper Scissors game
+#              with score tracking and auto-
+#              reset after each round result
 # ============================================
 
 import tkinter as tk
-from tkinter import font as tkfont
 import random
 
 
-# ---- Choices and their emoji icons ----
+# ---- All three possible choices ----
 CHOICES = ["Rock", "Paper", "Scissors"]
 
+# ---- Emoji for each choice ----
 EMOJI = {
     "Rock":     "🪨",
     "Paper":    "📄",
     "Scissors": "✂️"
 }
 
-# ---- Who beats who (player_choice beats ...) ----
-WINS_AGAINST = {
+# ---- What each choice beats ----
+BEATS = {
     "Rock":     "Scissors",
     "Paper":    "Rock",
     "Scissors": "Paper"
 }
 
-
-# ---- Score tracking (starts at 0) ----
-player_score = 0
+# ---- Score counters ----
+player_score   = 0
 computer_score = 0
-ties = 0
+tie_score      = 0
+
+# ---- Flag to stop double-clicking during the 2s wait ----
+round_in_progress = False
 
 
-# ---- Function to get computer's choice ----
+# ---- Computer picks randomly ----
 def computer_pick():
     return random.choice(CHOICES)
 
 
-# ---- Function to find out who won ----
+# ---- Figure out who won the round ----
 def get_result(player, computer):
     if player == computer:
         return "tie"
-    elif WINS_AGAINST[player] == computer:
+    elif BEATS[player] == computer:
         return "win"
     else:
         return "lose"
 
 
-# ---- Main function that runs when a button is clicked ----
-def play(player_choice):
-    global player_score, computer_score, ties
+# ---- Reset just the round display (not scores) ----
+def reset_round_display():
+    global round_in_progress
 
-    # Get computer's random choice
+    player_emoji_label.config(text="❓", fg="#6c7086")
+    player_name_label.config(text="Your Choice", fg="#6c7086")
+
+    computer_emoji_label.config(text="❓", fg="#6c7086")
+    computer_name_label.config(text="Computer", fg="#6c7086")
+
+    result_label.config(text="Make your move!", fg="#6c7086")
+    result_card.config(bg="#2a2a3e")
+    vs_label.config(fg="#45475a")
+
+    # Allow the player to click again
+    round_in_progress = False
+
+
+# ---- Main game function — runs when player clicks a choice ----
+def play(player_choice):
+    global player_score, computer_score, tie_score, round_in_progress
+
+    # Don't allow clicking while result is still showing
+    if round_in_progress:
+        return
+
+    round_in_progress = True
+
+    # Computer makes its pick
     comp_choice = computer_pick()
 
-    # Find out who won
+    # Work out who won
     result = get_result(player_choice, comp_choice)
 
-    # Update scores based on result
+    # Update scores and pick colors based on result
     if result == "win":
-        player_score += 1
-        result_text   = "🎉  You Win!"
-        result_color  = "#a6e3a1"   # green
-        bg_flash      = "#1a3a2a"   # dark green flash
+        player_score  += 1
+        result_text    = "🎉  You Win!"
+        result_color   = "#a6e3a1"   # green
+        flash_bg       = "#1a3a2a"
 
     elif result == "lose":
         computer_score += 1
-        result_text    = "💻  Computer Wins!"
-        result_color   = "#f38ba8"  # red
-        bg_flash       = "#3a1a1a"  # dark red flash
+        result_text     = "💻  Computer Wins!"
+        result_color    = "#f38ba8"  # red
+        flash_bg        = "#3a1a1a"
 
     else:
-        ties += 1
+        tie_score   += 1
         result_text  = "🤝  It's a Tie!"
-        result_color = "#f9e2af"    # yellow
-        bg_flash     = "#2a2a1a"    # dark yellow flash
+        result_color = "#f9e2af"     # yellow
+        flash_bg     = "#2e2a1a"
 
-    # ---- Update all the labels on screen ----
+    # ---- Show player's choice ----
+    player_emoji_label.config(text=EMOJI[player_choice], fg="white")
+    player_name_label.config(text=player_choice, fg="#cdd6f4")
 
-    # Player choice display
-    player_choice_label.config(
-        text=f"{EMOJI[player_choice]}\n{player_choice}"
-    )
+    # ---- Show computer's choice ----
+    computer_emoji_label.config(text=EMOJI[comp_choice], fg="white")
+    computer_name_label.config(text=comp_choice, fg="#cdd6f4")
 
-    # Computer choice display
-    computer_choice_label.config(
-        text=f"{EMOJI[comp_choice]}\n{comp_choice}"
-    )
-
-    # Result message
+    # ---- Show who won ----
     result_label.config(text=result_text, fg=result_color)
+    result_card.config(bg=flash_bg)
+    vs_label.config(fg=result_color)
 
-    # Score display
+    # ---- Update the score bar ----
     score_label.config(
-        text=f"You: {player_score}     Ties: {ties}     Computer: {computer_score}"
+        text=f"You  {player_score}  —  {tie_score}  —  {computer_score}  Computer"
     )
 
-    # Flash the result card background for visual feedback
-    result_card.config(bg=bg_flash)
-    window.after(400, lambda: result_card.config(bg="#2a2a3e"))
-
-    # Also animate the vs section briefly
-    vs_label.config(fg=result_color)
-    window.after(600, lambda: vs_label.config(fg="#585b70"))
+    # ---- After 2 seconds, clear the round display (but keep scores) ----
+    window.after(2000, reset_round_display)
 
 
-# ---- Function to reset the entire game ----
+# ---- Full game reset — scores go back to zero ----
 def reset_game():
-    global player_score, computer_score, ties
+    global player_score, computer_score, tie_score, round_in_progress
 
-    # Reset all scores to zero
+    # Cancel any pending auto-reset and allow fresh start
+    round_in_progress = False
+
     player_score   = 0
     computer_score = 0
-    ties           = 0
+    tie_score      = 0
 
-    # Clear everything on screen
-    player_choice_label.config(text="❓\nYour Choice")
-    computer_choice_label.config(text="❓\nComputer")
-    result_label.config(text="Make your move!", fg="#6c7086")
-    score_label.config(text="You: 0     Ties: 0     Computer: 0")
-    vs_label.config(fg="#585b70")
+    score_label.config(text="You  0  —  0  —  0  Computer")
+    reset_round_display()
+
+
+# ============================================
+#            BUTTON HOVER HELPERS
+# ============================================
+
+def on_hover(frame, labels, hover_color):
+    frame.config(bg=hover_color)
+    for lbl in labels:
+        lbl.config(bg=hover_color)
+
+def on_leave(frame, labels, normal_color):
+    frame.config(bg=normal_color)
+    for lbl in labels:
+        lbl.config(bg=normal_color)
 
 
 # ============================================
 #              BUILD THE WINDOW
 # ============================================
 
-# Create main window
 window = tk.Tk()
 window.title("Rock Paper Scissors")
-window.geometry("520x660")
+window.geometry("520x670")
 window.resizable(False, False)
 window.configure(bg="#1e1e2e")
 
-# ---- Title at the top ----
-title_label = tk.Label(
+# ---- Title ----
+tk.Label(
     window,
     text="Rock  Paper  Scissors",
-    font=("Segoe UI", 20, "bold"),
+    font=("Segoe UI", 21, "bold"),
     bg="#1e1e2e",
     fg="#cdd6f4"
-)
-title_label.pack(pady=(28, 4))
+).pack(pady=(28, 3))
 
-subtitle_label = tk.Label(
+tk.Label(
     window,
-    text="Choose your move and beat the computer!",
+    text="Pick your move — computer will respond!",
     font=("Segoe UI", 10),
     bg="#1e1e2e",
     fg="#6c7086"
-)
-subtitle_label.pack(pady=(0, 18))
+).pack(pady=(0, 18))
 
-# ---- Score Card ----
-score_card = tk.Frame(window, bg="#181825", pady=10)
-score_card.pack(fill="x", padx=35)
+# ---- Score Bar ----
+score_bar = tk.Frame(window, bg="#181825", pady=10)
+score_bar.pack(fill="x", padx=35)
 
 score_label = tk.Label(
-    score_card,
-    text="You: 0     Ties: 0     Computer: 0",
+    score_bar,
+    text="You  0  —  0  —  0  Computer",
     font=("Segoe UI", 12, "bold"),
     bg="#181825",
-    fg="#89b4fa"    # blue
+    fg="#89b4fa"
 )
 score_label.pack()
 
-# ---- Result Card (shows choices + winner) ----
-result_card = tk.Frame(window, bg="#2a2a3e", pady=15)
+tk.Label(
+    score_bar,
+    text="Wins  —  Ties  —  Wins",
+    font=("Segoe UI", 8),
+    bg="#181825",
+    fg="#45475a"
+).pack(pady=(0, 4))
+
+# ---- Result Card ----
+result_card = tk.Frame(window, bg="#2a2a3e", pady=18)
 result_card.pack(fill="x", padx=35, pady=14)
 
-# Player and Computer choices sit side by side
+# Row that holds both choice boxes and the VS in the middle
 choices_row = tk.Frame(result_card, bg="#2a2a3e")
 choices_row.pack()
 
-# Player choice box
-player_box = tk.Frame(choices_row, bg="#313145", width=130, height=100)
-player_box.pack(side="left", padx=12, pady=5, ipadx=10, ipady=8)
+# -- Player choice box --
+player_box = tk.Frame(choices_row, bg="#313145", width=140, height=110)
+player_box.pack(side="left", padx=10)
 player_box.pack_propagate(False)
 
-player_top = tk.Label(
-    player_box,
-    text="YOU",
+tk.Label(
+    player_box, text="YOU",
     font=("Segoe UI", 8, "bold"),
-    bg="#313145",
-    fg="#89b4fa"
-)
-player_top.pack(pady=(6, 0))
+    bg="#313145", fg="#89b4fa"
+).pack(pady=(8, 0))
 
-player_choice_label = tk.Label(
-    player_box,
-    text="❓\nYour Choice",
-    font=("Segoe UI", 14),
-    bg="#313145",
-    fg="#cdd6f4",
-    justify="center"
+player_emoji_label = tk.Label(
+    player_box, text="❓",
+    font=("Segoe UI", 26),
+    bg="#313145", fg="#6c7086"
 )
-player_choice_label.pack(expand=True)
+player_emoji_label.pack()
 
-# VS label in the middle
+player_name_label = tk.Label(
+    player_box, text="Your Choice",
+    font=("Segoe UI", 10),
+    bg="#313145", fg="#6c7086"
+)
+player_name_label.pack(pady=(0, 6))
+
+# -- VS label in the middle --
 vs_label = tk.Label(
-    choices_row,
-    text="VS",
-    font=("Segoe UI", 16, "bold"),
-    bg="#2a2a3e",
-    fg="#585b70"
+    choices_row, text="VS",
+    font=("Segoe UI", 15, "bold"),
+    bg="#2a2a3e", fg="#45475a"
 )
-vs_label.pack(side="left", padx=10)
+vs_label.pack(side="left", padx=12)
 
-# Computer choice box
-comp_box = tk.Frame(choices_row, bg="#313145", width=130, height=100)
-comp_box.pack(side="left", padx=12, pady=5, ipadx=10, ipady=8)
+# -- Computer choice box --
+comp_box = tk.Frame(choices_row, bg="#313145", width=140, height=110)
+comp_box.pack(side="left", padx=10)
 comp_box.pack_propagate(False)
 
-comp_top = tk.Label(
-    comp_box,
-    text="COMPUTER",
+tk.Label(
+    comp_box, text="COMPUTER",
     font=("Segoe UI", 8, "bold"),
-    bg="#313145",
-    fg="#f38ba8"    # red/pink
-)
-comp_top.pack(pady=(6, 0))
+    bg="#313145", fg="#f38ba8"
+).pack(pady=(8, 0))
 
-computer_choice_label = tk.Label(
-    comp_box,
-    text="❓\nComputer",
-    font=("Segoe UI", 14),
-    bg="#313145",
-    fg="#cdd6f4",
-    justify="center"
+computer_emoji_label = tk.Label(
+    comp_box, text="❓",
+    font=("Segoe UI", 26),
+    bg="#313145", fg="#6c7086"
 )
-computer_choice_label.pack(expand=True)
+computer_emoji_label.pack()
 
-# ---- Result Message ----
+computer_name_label = tk.Label(
+    comp_box, text="Computer",
+    font=("Segoe UI", 10),
+    bg="#313145", fg="#6c7086"
+)
+computer_name_label.pack(pady=(0, 6))
+
+# -- Result message --
 result_label = tk.Label(
     result_card,
     text="Make your move!",
@@ -241,90 +279,88 @@ result_label = tk.Label(
     bg="#2a2a3e",
     fg="#6c7086"
 )
-result_label.pack(pady=(14, 5))
+result_label.pack(pady=(14, 2))
+
+# Small hint under result
+tk.Label(
+    result_card,
+    text="Display resets automatically after 2 seconds",
+    font=("Segoe UI", 8),
+    bg="#2a2a3e",
+    fg="#45475a"
+).pack(pady=(0, 4))
 
 # ---- Divider ----
-tk.Frame(window, bg="#313145", height=1).pack(fill="x", padx=35, pady=2)
+tk.Frame(window, bg="#313145", height=1).pack(fill="x", padx=35, pady=(2, 14))
 
-# ---- Buttons Section Label ----
-choose_label = tk.Label(
+# ---- Choose Your Move label ----
+tk.Label(
     window,
     text="Choose Your Move",
     font=("Segoe UI", 11, "bold"),
     bg="#1e1e2e",
     fg="#cdd6f4"
-)
-choose_label.pack(pady=(16, 10))
+).pack(pady=(0, 10))
 
-# ---- Three Move Buttons ----
+# ---- The Three Choice Buttons ----
 buttons_frame = tk.Frame(window, bg="#1e1e2e")
-buttons_frame.pack(pady=4)
+buttons_frame.pack()
 
-# Button styling — each button is a card with an emoji and label
-button_data = [
-    ("Rock",     "🪨", "#7c3aed", "#6d28d9"),   # purple
-    ("Paper",    "📄", "#0369a1", "#075985"),    # blue
-    ("Scissors", "✂️",  "#b45309", "#92400e"),   # amber
+# Each entry: (label, emoji, normal color, hover color)
+button_info = [
+    ("Rock",     "🪨", "#5b21b6", "#4c1d95"),   # purple
+    ("Paper",    "📄", "#075985", "#0c4a6e"),    # blue
+    ("Scissors", "✂️",  "#92400e", "#78350f"),   # amber
 ]
 
-for choice, emoji, color, hover_color in button_data:
-    btn_frame = tk.Frame(buttons_frame, bg=color, cursor="hand2")
-    btn_frame.pack(side="left", padx=8, ipadx=4, ipady=4)
+for choice, emoji, normal_bg, hover_bg in button_info:
+
+    card_frame = tk.Frame(buttons_frame, bg=normal_bg, cursor="hand2")
+    card_frame.pack(side="left", padx=8, ipadx=6, ipady=6)
 
     emoji_lbl = tk.Label(
-        btn_frame,
-        text=emoji,
-        font=("Segoe UI", 30),
-        bg=color,
-        fg="white",
-        cursor="hand2"
+        card_frame, text=emoji,
+        font=("Segoe UI", 32),
+        bg=normal_bg, fg="white", cursor="hand2"
     )
     emoji_lbl.pack(padx=18, pady=(12, 2))
 
-    text_lbl = tk.Label(
-        btn_frame,
-        text=choice,
+    name_lbl = tk.Label(
+        card_frame, text=choice,
         font=("Segoe UI", 11, "bold"),
-        bg=color,
-        fg="white",
-        cursor="hand2"
+        bg=normal_bg, fg="white", cursor="hand2"
     )
-    text_lbl.pack(pady=(2, 12))
+    name_lbl.pack(pady=(2, 12))
 
-    # Make the whole card clickable (not just the button widget)
-    for widget in [btn_frame, emoji_lbl, text_lbl]:
+    # Group all widgets so hover changes color on all of them together
+    all_widgets = [emoji_lbl, name_lbl]
+
+    for widget in [card_frame, emoji_lbl, name_lbl]:
         widget.bind("<Button-1>", lambda e, c=choice: play(c))
+        widget.bind("<Enter>",    lambda e, f=card_frame, w=all_widgets, h=hover_bg:
+                    on_hover(f, w, h))
+        widget.bind("<Leave>",    lambda e, f=card_frame, w=all_widgets, n=normal_bg:
+                    on_leave(f, w, n))
 
-        # Hover effects — darken on hover
-        widget.bind("<Enter>", lambda e, f=btn_frame, h=hover_color: f.config(bg=h) or
-                    [w.config(bg=h) for w in f.winfo_children()])
-        widget.bind("<Leave>", lambda e, f=btn_frame, n=color: f.config(bg=n) or
-                    [w.config(bg=n) for w in f.winfo_children()])
+# ---- Rules reminder ----
+rules_frame = tk.Frame(window, bg="#181825")
+rules_frame.pack(fill="x", padx=35, pady=16)
 
-# ---- How to Play Section ----
-rules_card = tk.Frame(window, bg="#181825")
-rules_card.pack(fill="x", padx=35, pady=18)
-
-rules_title = tk.Label(
-    rules_card,
-    text="How to Play",
+tk.Label(
+    rules_frame, text="How to Play",
     font=("Segoe UI", 9, "bold"),
-    bg="#181825",
-    fg="#585b70"
-)
-rules_title.pack(pady=(8, 2))
+    bg="#181825", fg="#585b70"
+).pack(pady=(8, 2))
 
-rules_text = tk.Label(
-    rules_card,
+tk.Label(
+    rules_frame,
     text="🪨 Rock beats Scissors   •   📄 Paper beats Rock   •   ✂️ Scissors beats Paper",
     font=("Segoe UI", 9),
-    bg="#181825",
-    fg="#45475a"
-)
-rules_text.pack(pady=(0, 6))
+    bg="#181825", fg="#45475a"
+).pack(pady=(0, 8))
 
 # ---- Reset Button ----
-reset_btn = tk.Button(
+tk.Button(
     window,
     text="🔄  Reset Game",
     font=("Segoe UI", 10, "bold"),
@@ -336,8 +372,7 @@ reset_btn = tk.Button(
     bd=0,
     cursor="hand2",
     command=reset_game
-)
-reset_btn.pack(pady=(0, 6), ipadx=16, ipady=6)
+).pack(ipadx=16, ipady=7)
 
 # ---- Footer ----
 tk.Label(
@@ -346,7 +381,7 @@ tk.Label(
     font=("Segoe UI", 9),
     bg="#1e1e2e",
     fg="#313145"
-).pack(pady=(4, 14))
+).pack(pady=(10, 14))
 
-# ---- Start the app ----
+# ---- Run the app ----
 window.mainloop()

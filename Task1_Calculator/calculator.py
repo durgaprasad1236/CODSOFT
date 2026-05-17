@@ -1,7 +1,7 @@
 # ============================================
 # Simple Calculator Project
 # Author: N.Durga prasad 
-# Date: 17/05/2026
+# Date: 12/05/2026
 # Description: A basic calculator that can
 #              add, subtract, multiply, divide
 # ============================================
