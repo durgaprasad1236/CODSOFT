@@ -57,4 +57,5 @@ These projects were created as part of my internship practice and learning journ
 ---
 
 ## Author
-Dhiruu
+N.Durga prasad 
+
