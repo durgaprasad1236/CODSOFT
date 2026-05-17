@@ -1,7 +1,7 @@
 # ============================================
 # Password Generator Project
-# Author: [Your Name]
-# Date: May 2026
+# Author: N.Durga prasad
+# Date: 21/05/2026 
 # Description: A GUI-based password generator
 #              built with Python and Tkinter
 # ============================================
