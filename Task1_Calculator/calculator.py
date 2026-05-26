@@ -1,13 +1,4 @@
-# ============================================
-# Simple Calculator Project
-# Author: N.Durga prasad 
-# Date: 12/05/2026
-# Description: A basic calculator that can
-#              add, subtract, multiply, divide
-# ============================================
 
-
-# Function to show welcome message
 def show_welcome():
     print("=" * 40)
     print("      Welcome to Simple Calculator      ")

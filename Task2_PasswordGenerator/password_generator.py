@@ -1,10 +1,3 @@
-# ============================================
-# Password Generator Project
-# Author: N.Durga prasad
-# Date: 17/05/2026 
-# Description: A GUI-based password generator
-#              built with Python and Tkinter
-# ============================================
 
 import tkinter as tk
 from tkinter import messagebox

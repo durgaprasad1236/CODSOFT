@@ -1,11 +1,3 @@
-# ============================================
-# Rock Paper Scissors Game
-# Author: N.durga prasad 
-# Date: 26/05/2026
-# Description: A GUI Rock Paper Scissors game
-#              with score tracking and auto-
-#              reset after each round result
-# ============================================
 
 import tkinter as tk
 import random
